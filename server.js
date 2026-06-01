@@ -1,23 +1,3 @@
-import express from "express";
-import cors from "cors";
-import OpenAI from "openai";
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-// OpenAI client (uses Vercel environment variable)
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// ✅ TEST ROUTE (checks if backend is alive)
-app.get("/test", (req, res) => {
-  res.json({ status: "backend working" });
-});
-
-// ✅ CHAT ROUTE (main AI function)
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -27,22 +7,22 @@ app.post("/chat", async (req, res) => {
       input: message
     });
 
+    // SAFE extraction (this is the fix)
+    let text = "";
+
+    if (typeof response.output_text === "string") {
+      text = response.output_text;
+    } else if (response.output && response.output[0]) {
+      text = response.output[0].content?.[0]?.text || "";
+    }
+
     res.json({
-      reply: response.output_text
+      reply: text || "No response from AI"
     });
 
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: error.message
+    res.json({
+      reply: "Error: " + error.message
     });
   }
 });
-
-// Default route
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
-});
-
-export default app;
