@@ -7,12 +7,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect OpenAI using secret key from Vercel
+// OpenAI client (uses Vercel environment variable)
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Main chat endpoint
+// ✅ TEST ROUTE (checks if backend is alive)
+app.get("/test", (req, res) => {
+  res.json({ status: "backend working" });
+});
+
+// ✅ CHAT ROUTE (main AI function)
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -35,7 +40,7 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-// Test route (just to check if server works)
+// Default route
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
